@@ -15,6 +15,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jsonex.core.charsource.Bookmark;
 import org.jsonex.core.type.Lazy;
+import org.jsonex.core.type.Nullable;
 import static org.jsonex.core.util.LangUtil.orElse;
 import static org.jsonex.core.util.LangUtil.safe;
 import org.jsonex.core.util.ListUtil;
@@ -23,6 +24,10 @@ import static org.jsonex.core.util.ListUtil.listOf;
 import static org.jsonex.core.util.ListUtil.map;
 import org.jsonex.core.util.StringUtil;
 import org.jsonex.treedoc.TDPath.Part;
+import org.jsonex.treedoc.schema.BooleanType;
+import org.jsonex.treedoc.schema.NullType;
+import org.jsonex.treedoc.schema.NumberType;
+import org.jsonex.treedoc.schema.Schema;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -343,5 +348,28 @@ public class TDNode {
   /** Hash code of value and children, key is not included */
   @Override public int hashCode() {
     return hash.getOrCompute(() -> Objects.hash(value, children, map(children, TDNode::getKey)));
+  }
+
+  public Schema getSchema() {
+    if (type == Type.SIMPLE) {
+      if (value == null)
+        return NullType.instance;
+      else if (value instanceof Boolean)
+        return BooleanType.instance;
+      else if (value instanceof Number)
+        return NumberType.instance;
+    } else if (type == Type.ARRAY) {
+      if (children == null || children.isEmpty())
+        return NullType.instance;
+      Schema schema = children.get(0).getSchema();
+      if (schema instanceof NullType)
+        return NullType.instance;
+      return new ArrayType(schema);
+    } else if (type == Type.MAP) {
+      if (children == null || children.isEmpty())
+        return NullType.instance;
+      return new MapType(children.get(0).getSchema());
+    }
+
   }
 }
