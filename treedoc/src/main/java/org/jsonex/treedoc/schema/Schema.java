@@ -1,7 +1,7 @@
 package org.jsonex.treedoc.schema;
 
-public abstract class Schema {
+public class Schema {
   public boolean isSimilarTo(Schema other) {
-    return this.getClass() == other.getClass();
+    return this instanceof NullType || other instanceof NullType || this.getClass() == other.getClass();
   }
 }

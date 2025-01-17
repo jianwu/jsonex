@@ -1,6 +1,7 @@
 package org.jsonex.treedoc.schema;
 
 import lombok.Data;
+import org.jsonex.core.util.SetUtil;
 
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -14,13 +15,15 @@ public class ObjectType extends Schema {
     if (! (other instanceof ObjectType))
       return false;
     ObjectType otherObj = (ObjectType) other;
-    properties.keySet().removeAll(otherObj.properties.keySet());
-    for(String key : properties.keySet()) {
-      if (!otherObj.properties.containsKey(key))
-        return false;
+    int diff = SetUtil.difference(properties.keySet(), otherObj.properties.keySet()).size();
+    Set<String> commonKeys = SetUtil.intersection(properties.keySet(), otherObj.properties.keySet());
+    if (diff > commonKeys.size())
+      return false;
+
+    for(String key : commonKeys) {
       if (!properties.get(key).isSimilarTo(otherObj.properties.get(key)))
         return false;
     }
-
+    return true;
   }
 }

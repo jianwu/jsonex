@@ -1,11 +1,5 @@
 package org.jsonex.treedoc.compactor;
 
-import org.jsonex.treedoc.TDNode;
-import org.jsonex.treedoc.TreeDoc;
-import org.jsonex.treedoc.schema.Schema;
-
-import java.util.Map;
-
 /**
  * Treedoc Compactor compacts a collections of Treedocs by externalizing common schemas.
  * <p>
@@ -35,10 +29,10 @@ import java.util.Map;
  */
 public class TreedocCompactor {
   // Store the schema and reference count (root reference only), when we encode the schema, we will order them by the frequency
-  Map<Schema, int[]> schemaCount;
-
-  public TreedocCompactor updateSchema(TreeDoc treeDoc) {
-    treeDoc.getRoot().foreach(TDNode)
-    return this;
-  }
+//  Map<Schema, int[]> schemaCount;
+//
+//  public TreedocCompactor updateSchema(TreeDoc treeDoc) {
+//    treeDoc.getRoot().foreach(TDNode)
+//    return this;
+//  }
 }
