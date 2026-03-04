@@ -36,6 +36,7 @@ public class TDJSONWriter {
 
   @SneakyThrows
   public <T extends Appendable> T write(T out, TDNode node, TDJSONOption opt, String indentStr) {
+    opt.buildTerms();
     if (node == null)
       return (T) out.append(opt.deco("null", NON_STRING));
 
