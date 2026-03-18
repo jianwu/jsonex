@@ -26,6 +26,8 @@ public class TDJsonWriterTest {
     TDJSONOption opt = TDJSONOption.ofIndentFactor(2).setQuoteChars("\"'").setAlwaysQuoteKey(false).setAlwaysQuoteValue(false);
     String result = TDJSONWriter.get().writeAsString(node, opt) + "\n";
     assertEquals(readResource("testQuote_result.json"), result);
+    TDNode node2 = TDJSONParser.get().parse(result, opt);
+    assertEquals(node, node2);
   }
 
   @Test public void testWriterWithTextDeco() {
@@ -46,10 +48,9 @@ public class TDJsonWriterTest {
   }
 
   @Test public void testWriterWithTypeWrapper() {
-    TDNode node = TDJSONParser.get().parse(readResource("testQuote.json"));
-    TDJSONOption opt = TDJSONOption.ofIndentFactor(2).setUseTypeWrapper(true);
-    String str = TDJSONWriter.get().writeAsString(node, opt) + "\n";
-    assertEquals(readResource("testData_withTypeWrapper.json"), str);
+    TDNode node = TDJSONParser.get().parse("{key:113, $type: someType}");
+    TDJSONOption opt = TDJSONOption.ofIndentFactor(0).setUseTypeWrapper(true);
+    assertEquals("someType{\"key\":113,}", TDJSONWriter.get().writeAsString(node, opt));
   }
 
   private String readResource(String fileName) {

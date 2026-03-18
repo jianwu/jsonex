@@ -37,6 +37,7 @@ public class TDJSONOption {
   String deliminatorObjectEnd = "}";
   String deliminatorArrayStart = "[";
   String deliminatorArrayEnd = "]";
+  String commentStart = "/#\\";
 
   /** The source */
   //final CharSource source;
@@ -60,6 +61,7 @@ public class TDJSONOption {
    */
   String quoteChars = "\"";
   String indentStr = "";
+  String commentStartChar = "/#";
   BiFunction<String, TextType, String> textDecorator;
 
   /**
@@ -148,6 +150,6 @@ public class TDJSONOption {
 
     _termValueInMap = _termValue + deliminatorObjectEnd + deliminatorArrayEnd; // It's possible object end is omitted for path compression. e.g [a:b:c]
     _termValueInArray = _termValue + deliminatorArrayEnd;
-    _quoteNeededChars = _termValue + _termKey + deliminatorObjectEnd + deliminatorArrayEnd + deliminatorKey + deliminatorValue + quoteChars;
+    _quoteNeededChars = _termValue + _termKey + deliminatorObjectEnd + deliminatorArrayEnd + deliminatorKey + deliminatorValue + quoteChars + commentStartChar;
   }
 }

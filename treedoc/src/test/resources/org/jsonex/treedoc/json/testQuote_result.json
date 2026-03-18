@@ -2,5 +2,6 @@
   "key with space":"value contains special chars: [",
   normalKey:normal Value,
   "keyWith:":'value has quotes: " ", \'',
+  "keyWith#":"#",
   $type:TestQuote
 }

@@ -21,7 +21,7 @@
   </modules>
 
   <properties>
-    <compile.version>1.8</compile.version>
+    <compile.version>17</compile.version>
     <additionalJOption>-Xdoclint:none</additionalJOption>
   </properties>
 
@@ -118,6 +118,7 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
+          <release>${compile.version}</release>
           <source>${compile.version}</source>
           <target>${compile.version}</target>
           <annotationProcessorPaths>
