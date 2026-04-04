@@ -23,6 +23,7 @@ public class TDJSONOption {
   public static TDJSONOption ofIndentFactor(int factor) { return new TDJSONOption().setIndentFactor(factor); }
   public static TDJSONOption ofDefaultRootType(TDNode.Type type) { return new TDJSONOption().setDefaultRootType(type); }
   public static TDJSONOption ofMapToString() { return new TDJSONOption().setDeliminatorKey("=").setDeliminatorValue(", "); }
+  public static TDJSONOption ofCompact() { return new TDJSONOption().setAlwaysQuoteKey(false).setAlwaysQuoteValue(false).setIndentFactor(0); }
 
   String KEY_ID = "$id";
   String KEY_TYPE = "$type";

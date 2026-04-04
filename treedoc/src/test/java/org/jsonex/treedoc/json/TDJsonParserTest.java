@@ -4,8 +4,10 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jsonex.core.charsource.ArrayCharSource;
 import org.jsonex.core.charsource.ReaderCharSource;
+import org.jsonex.core.charsource.ParseRuntimeException;
 import static org.jsonex.core.util.FileUtil.loadResource;
 import static org.jsonex.core.util.FileUtil.readResource;
+import static org.jsonex.core.util.ListUtil.flatMap;
 import static org.jsonex.core.util.ListUtil.listOf;
 import static org.jsonex.core.util.MapBuilder.mapOf;
 import org.jsonex.treedoc.TDNode;
@@ -17,6 +19,8 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 
 import java.io.Reader;
@@ -26,7 +30,8 @@ import java.util.Map;
 
 @Slf4j
 public class TDJsonParserTest {
-  @Test public void testSkipSpaceAndComments() {
+  @Test
+  public void testSkipSpaceAndComments() {
     ArrayCharSource in = new ArrayCharSource("  //abcd \n // defghi \n abc");
     assertEquals('a', TDJSONParser.skipSpaceAndComments(in));
     assertEquals("abc", in.read(3));
@@ -41,7 +46,8 @@ public class TDJsonParserTest {
   }
 
 
-  @Test public void testParse() {
+  @Test
+  public void testParse() {
     TDNode node = TDJSONParser.get().parse(readResource(this.getClass(), "testdata.json"));
 
     log.info("testParse: Node=" + TestUtil.toJSON(node));
@@ -69,7 +75,8 @@ public class TDJsonParserTest {
     log.info("formatted json: " + json);
   }
 
-  @Test public void testParseValueWithoutKey() {
+  @Test
+  public void testParseValueWithoutKey() {
     String json = "{\n" +
         "  abc: 10\n" +
         "  aaa\n" +
@@ -79,7 +86,8 @@ public class TDJsonParserTest {
     assertEquals("aaa", node.getChildValue("1"));
   }
 
-  @Test public void testParseProto() {
+  @Test
+  public void testParseProto() {
     Reader reader = loadResource(this.getClass(), "testdata.textproto");
     TDNode node = TDJSONParser.get().parse(reader, TDJSONOption.ofDefaultRootType(TDNode.Type.MAP));
     log.info("testParseProto: Node=" + TestUtil.toJSON(node));
@@ -92,26 +100,29 @@ public class TDJsonParserTest {
     assertEquals("1", node.getByPath("n/n1/1").getKey());
   }
 
-  @Test public void testParseJson5() {
+  @Test
+  public void testParseJson5() {
     Reader reader = loadResource(this.getClass(), "testdata.json5");
     TDNode node = TDJSONParser.get().parse(reader, TDJSONOption.ofDefaultRootType(TDNode.Type.MAP));
     log.info("testParseJson5: Node=" + TestUtil.toJSON(node));
     String json = TDJSONWriter.get().writeAsString(node, new TDJSONOption().setIndentFactor(2));
     log.info("testParseJson5: formatted json: " + json);
-    assertEquals("and you can quote me on that", node.getValueByPath( "unquoted"));
-    assertEquals(912559, node.getValueByPath( "hexadecimal"));
-    assertEquals(0.8675309, node.getValueByPath( "leadingDecimalPoint"));
-    assertEquals(1, node.getValueByPath( "positiveSign"));
+    assertEquals("and you can quote me on that", node.getValueByPath("unquoted"));
+    assertEquals(912559, node.getValueByPath("hexadecimal"));
+    assertEquals(0.8675309, node.getValueByPath("leadingDecimalPoint"));
+    assertEquals(1, node.getValueByPath("positiveSign"));
   }
 
-  @Test public void testRootMap() {
+  @Test
+  public void testRootMap() {
     TDNode node = TDJSONParser.get().parse("'a':1\nb:2,",
         TDJSONOption.ofDefaultRootType(TDNode.Type.MAP));
     assertEquals(1, node.getValueByPath("a"));
     assertEquals(2, node.getValueByPath("b"));
   }
 
-  @Test public void testRootArray() {
+  @Test
+  public void testRootArray() {
     Reader reader = loadResource(this.getClass(), "rootArray.json");
     TDNode node = TDJSONParser.get().parse(reader, TDJSONOption.ofDefaultRootType(TDNode.Type.ARRAY));
     log.info("testParseJson5: Node=" + TestUtil.toJSON(node));
@@ -122,7 +133,8 @@ public class TDJsonParserTest {
     assertEquals(3, node.getValueByPath("3/v"));
   }
 
-  @Test public void testInvalid() {
+  @Test
+  public void testInvalid() {
     TDNode node = TDJSONParser.get().parse("}");
     assertEquals("}", node.getValue());
 
@@ -133,7 +145,8 @@ public class TDJsonParserTest {
     assertEquals("}", node.getChild(0).getValue());
   }
 
-  @Test public void testTDPath() {
+  @Test
+  public void testTDPath() {
     JSONPointer jp = JSONPointer.get();
     TDNode node = TDJSONParser.get().parse(readResource(this.getClass(), "testdata.json"));
     TDNode node1 = jp.query(node, "#1");
@@ -144,7 +157,8 @@ public class TDJsonParserTest {
     // assertEquals(10, jp.query(node1, "2/limit").getValue());
   }
 
-  @Test public void testToString() {
+  @Test
+  public void testToString() {
     TDNode node = TDJSONParser.get().parse(readResource(this.getClass(), "testdata.json"));
     String str = node.toString();
     log.info("testToString:str=" + str);
@@ -170,7 +184,8 @@ public class TDJsonParserTest {
     assertEquals("[{name: 'So...', ...}, ...]", strWithoutRootKeyLimited);
   }
 
-  @Test public void testSwap() {
+  @Test
+  public void testSwap() {
     TDNode node = TDJSONParser.get().parse(readResource(this.getClass(), "simple.json"));
     String str1 = node.toString();
     TDNode node0 = node.getByPath("/data/0/address0");
@@ -187,10 +202,12 @@ public class TDJsonParserTest {
 
   private final static String EXPECTED_STREAM_MERGE_RESULT =
       "[{a: 1, obj: {$id: '1_0'}, ref: {$ref: '#1_0'}}, {b: 2, obj: {$id: '1_1'}, ref: {$ref: '#1_1'}}, {a: 1, b: 2}]";
-  @Test public void testStream() {
+
+  @Test
+  public void testStream() {
     ReaderCharSource reader = new ReaderCharSource(loadResource(this.getClass(), "stream.json"));
     List<TDNode> nodes = new ArrayList<>();
-    while(reader.skipSpacesAndReturnsAndCommas()) {
+    while (reader.skipSpacesAndReturnsAndCommas()) {
       nodes.add(TDJSONParser.get().parse(reader, TDJSONOption.ofDefaultRootType(TDNode.Type.MAP)));
     }
     TDNode node = TreeDoc.merge(nodes).getRoot();
@@ -200,7 +217,8 @@ public class TDJsonParserTest {
     assertEquals(EXPECTED_STREAM_MERGE_RESULT, node.toString());
   }
 
-  @Test public void testParseAll() {
+  @Test
+  public void testParseAll() {
     TDNode node = TDJSONParser.get().parseAll(loadResource(this.getClass(), "stream.json"));
     log.info("testStream=" + node.toString());
     assertEquals(EXPECTED_STREAM_MERGE_RESULT, node.toString());
@@ -212,7 +230,8 @@ public class TDJsonParserTest {
     assertEquals("{a: 1, obj: {$id: '1_0'}, ref: {$ref: '#1_0'}}", node.toString());
   }
 
-  @Test public void testParseWithCustomDeliminator() {
+  @Test
+  public void testParseWithCustomDeliminator() {
     String str = "(a=va; c=(d=23; strs=<a; b>))";
     TDJSONOption opt = new TDJSONOption()
         .setDeliminatorKey("=")
@@ -228,21 +247,23 @@ public class TDJsonParserTest {
     String error = null;
     try {
       TDNode node = TDJSONParser.get().parse(str);
-    } catch(Exception e) {
+    } catch (Exception e) {
       error = e.getMessage();
     }
     assertEquals(expectedError, error);
   }
 
-  @Test public void testParseMissingClosing () {
+  @Test
+  public void testParseMissingClosing() {
     parseWithException("{abc:1", "EOF while expecting matching '}' with '{' at Bookmark(line=0, col=0, pos=0), Bookmark(line=0, col=6, pos=6), digest:");
     parseWithException("{a:[abc,def}", "EOF while expecting matching ']' with '[' at Bookmark(line=0, col=3, pos=3), Bookmark(line=0, col=12, pos=12), digest:");
     parseWithException("{a", "No ':' after key:a, Bookmark(line=0, col=2, pos=2), digest:");
     parseWithException("{'a'", "No ':' after key:a, Bookmark(line=0, col=4, pos=4), digest:");
   }
 
-  @Test public void testParseMapToString() {
-    Map<String, Object> map = mapOf("K1", (Object)"v1")
+  @Test
+  public void testParseMapToString() {
+    Map<String, Object> map = mapOf("K1", (Object) "v1")
         .put("k2", 123)
         .put("k3", mapOf("c", "Test with ,in").build())
         .put("k4", listOf("ab,c", "def"))
@@ -253,18 +274,20 @@ public class TDJsonParserTest {
     assertEquals("{K1: 'v1', k2: 123, k3: {c: 'Test with ,in'}, k4: ['ab,c', 'def']}", node.toString());
   }
 
-  @Test public void testParseObjectToString() {
+  @Test
+  public void testParseObjectToString() {
     TestCls test = new TestCls("va", new TestCls1(23, new String[]{"a", "b"}));
     String str = test.toString();  // TDJsonParserTest.TestCls(a=va, c=TDJsonParserTest.TestCls1(d=23, strs=[a, b]))
     TDJSONOption opt = new TDJSONOption().setDeliminatorObject("(", ")").setDeliminatorKey("=");
-    testParse(str, opt, "{$type:'TDJsonParserTest.TestCls',a:'va',c:{$type:'TDJsonParserTest.TestCls1',d:23,strs:['a','b']}}");
+    testParse(str, opt, "{$type:TDJsonParserTest.TestCls,a:va,c:{$type:TDJsonParserTest.TestCls1,d:23,strs:[a,b]}}");
   }
 
-  @Test public void testParsePathCompression() {
+  @Test
+  public void testParsePathCompression() {
     TDJSONOption opt = new TDJSONOption();
     testParse("a:b:123", opt, "{a:{b:123}}");
-    testParse("[h:i, j:k]", opt, "[{h:'i'},{j:'k'}]");
-    testParse("a:b:{e:123, f:g:[h:i, j:k]}", opt, "{a:{b:{e:123,f:{g:[{h:'i'},{j:'k'}]}}}}");
+    testParse("[h:i, j:k]", opt, "[{h:i},{j:k}]");
+    testParse("a:b:{e:123, f:g:[h:i, j:k]}", opt, "{a:{b:{e:123,f:{g:[{h:i},{j:k}]}}}}");
     testParse("a:b:123,c:d:456", opt, "{a:{b:123}}");  // Default, read a single map
     testParse("a:b:123,c:d:456", opt.setDefaultRootType(TDNode.Type.MAP), "{a:{b:123},c:{d:456}}");
     testParse("a:b:123,c:d:456", opt.setDefaultRootType(TDNode.Type.ARRAY), "[{a:{b:123}},{c:{d:456}}]");
@@ -273,7 +296,7 @@ public class TDJsonParserTest {
 
   private void testParse(String str, TDJSONOption opt, String expectedJson) {
     TDNode node = TDJSONParser.get().parse(str, opt);
-    assertEquals(expectedJson, TDJSONWriter.get().writeAsString(node, new TDJSONOption().setAlwaysQuoteKey(false).setQuoteChar('\'')));
+    assertEquals(expectedJson, TDJSONWriter.get().writeAsString(node, TDJSONOption.ofCompact()));
   }
 
   @Data
@@ -286,5 +309,21 @@ public class TDJsonParserTest {
   public static class TestCls1 {
     public final int d;
     public final String[] strs;
+  }
+
+  @Test
+  public void testParsePartialJsonReturnsPartialNode() {
+    verifyParsePartialJson("Partial object", "{'a': 1, 'b': 2, ''c.: ", "{a:1,b:2}");
+    verifyParsePartialJson("Partial string value", "{'a': 'hello", "{a:hello}");
+  }
+
+  private void verifyParsePartialJson(String name, String src, String expected) {
+    try {
+      TDJSONParser.get().parse(src);
+      fail(name + ":Expected ParseRuntimeException");
+    } catch (ParseRuntimeException e) {
+      TDNode node = ((TDNode) e.getPartialObject()).getDoc().getRoot();
+      assertEquals(name, expected, TDJSONWriter.get().writeAsString(node, TDJSONOption.ofCompact()));
+    }
   }
 }

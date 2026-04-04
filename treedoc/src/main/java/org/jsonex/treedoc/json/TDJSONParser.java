@@ -11,6 +11,8 @@ package org.jsonex.treedoc.json;
 
 import org.jsonex.core.charsource.ArrayCharSource;
 import org.jsonex.core.charsource.CharSource;
+import org.jsonex.core.charsource.EOFRuntimeException;
+import org.jsonex.core.charsource.ParseRuntimeException;
 import org.jsonex.core.charsource.ReaderCharSource;
 import org.jsonex.core.factory.InjectableInstance;
 import org.jsonex.core.util.ClassUtil;
@@ -77,8 +79,12 @@ public class TDJSONParser {
       if(c == '"' || c == '\'' || c == '`') {
         src.skip();
         StringBuilder sb = new StringBuilder();
-        src.readQuotedString(sb, c);
-        readContinuousString(src, sb);
+        try {
+          src.readQuotedString(sb, c);
+          readContinuousString(src, sb);
+        } catch (EOFRuntimeException | ParseRuntimeException e) {
+          throw src.createParseRuntimeException(e, "Error read quoted string", node.setValue(sb.toString()));
+        }
         return node.setValue(sb.toString());
       }
 
@@ -160,7 +166,7 @@ public class TDJSONParser {
       char c = skipSpaceAndComments(src);
       if (c == EOF) {
         if (withStartBracket)
-          throw src.createParseRuntimeException("EOF while expecting matching '}' with '{' at " + node.getStart());
+          throw src.createParseRuntimeException("EOF while expecting matching '}' with '{' at " + node.getStart(), node);
         break;
       }
 
@@ -186,11 +192,11 @@ public class TDJSONParser {
             && !contains(opt.deliminatorArrayStart, c)
             && !contains(opt.deliminatorValue, c)
             && !contains(opt.deliminatorObjectEnd, c))
-          throw src.createParseRuntimeException("No '" + opt.deliminatorKey + "' after key:" + key);
+          throw src.createParseRuntimeException("No '" + opt.deliminatorKey + "' after key:" + key, node);
       } else {
         key = src.readUntil(opt._termKey, opt._termKeyStrs, 1, Integer.MAX_VALUE).trim();
         if (src.isEof())
-          throw src.createParseRuntimeException("No '" + opt.deliminatorKey + "' after key:" + key);
+          throw src.createParseRuntimeException("No '" + opt.deliminatorKey + "' after key:" + key, node);
         c = src.peek();
       }
       if (src.startsWith(opt.deliminatorKey))
@@ -225,7 +231,7 @@ public class TDJSONParser {
       char c = skipSpaceAndComments(src);
       if (c == EOF) {
         if (withStartBracket)
-          throw src.createParseRuntimeException("EOF while expecting matching ']' with '[' at " + node.getStart());
+          throw src.createParseRuntimeException("EOF while expecting matching ']' with '[' at " + node.getStart(), node);
         break;
       }
 

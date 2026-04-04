@@ -9,8 +9,12 @@
 
 package org.jsonex.core.charsource;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.jsonex.core.type.Nullable;
+
 @SuppressWarnings("serial")
 public class EOFRuntimeException extends RuntimeException{
   public EOFRuntimeException(){}
-  public EOFRuntimeException(String msg){super(msg);}
+  public EOFRuntimeException(String msg) { super(msg); }
 }

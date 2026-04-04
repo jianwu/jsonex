@@ -53,11 +53,11 @@ public class CSVParser {
       if (!src.skipChars(SPACE_CHARS))
         break;
       Bookmark start = src.getBookmark();
-      Object val = readField(src, opt);
+      Object val = readField(src, opt, row);
       String key = null;
       if (fields != null) {
         if (i >= fields.size())
-          throw src.createParseRuntimeException("The row has more columns than headers");
+          throw src.createParseRuntimeException("The row has more columns than headers", row);
         key = fields.get(i++);
         if (key.equals(TDNode.COLUMN_KEY)) {
           row.setKey(val.toString());
@@ -88,14 +88,14 @@ public class CSVParser {
     while (!src.isEof() && src.peek() != opt.recordSep) {
       if (!src.skipChars(SPACE_CHARS))
         break;
-      result.add(readField(src, opt));
+      result.add(readField(src, opt, null));
     }
     if (!src.isEof())
       src.read();  // Skip the recordSep
     return result;
   }
 
-  Object readField(CharSource src, CSVOption opt) {
+  Object readField(CharSource src, CSVOption opt, TDNode row) {
     StringBuilder sb = new StringBuilder();
     if (src.isEof())
       return sb.toString();
@@ -114,7 +114,7 @@ public class CSVParser {
 
         src.readUntil(sb, opt._quoteCharStr);
         if (src.isEof())
-          throw src.createParseRuntimeException("Can't find matching quote at position:" + pos + ";line:" + line + ";col:" + col);
+          throw src.createParseRuntimeException("Can't find matching quote at position:" + pos + ";line:" + line + ";col:" + col, row);
 
         src.skip();
         if (src.isEof())

@@ -161,7 +161,7 @@ public abstract class CharSource {
       if (c == quote) {
         break;
       }
-      // c should be '/', tt's a escape sequence
+      // c should be '/', it's a escape sequence
       c = read();
       switch (c) {
         case 'b':
@@ -187,7 +187,7 @@ public abstract class CharSource {
           try {
             sb.append((char)Integer.parseInt(code, 16));
           } catch (NumberFormatException e) {
-            throw createParseRuntimeException("Escaped unicode with invalid number: " + code);
+            throw createParseRuntimeException("Escaped unicode with invalid number: " + code, sb);
           }
           break;
         case '\n':
@@ -226,7 +226,12 @@ public abstract class CharSource {
 //    return result.toString();
 //  }
 
-  public ParseRuntimeException createParseRuntimeException(String message) {
-    return new ParseRuntimeException(message, this.getBookmark(), this.peekString(10));
+  public ParseRuntimeException createParseRuntimeException(String message, Object partialObj) {
+    return new ParseRuntimeException(null, message, this.getBookmark(), this.peekString(10), partialObj);
   }
+
+  public ParseRuntimeException createParseRuntimeException(Throwable cause, String message, Object partialObj) {
+    return new ParseRuntimeException(cause, message, this.getBookmark(), this.peekString(10), partialObj);
+  }
+
 }

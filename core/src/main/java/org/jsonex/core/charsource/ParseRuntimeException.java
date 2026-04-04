@@ -9,14 +9,21 @@
 
 package org.jsonex.core.charsource;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.jsonex.core.type.Nullable;
+
 public class ParseRuntimeException extends RuntimeException {
   final Bookmark bookmark;
   final String digest;
+  @Getter @Setter
+  final private @Nullable Object partialObject;
 
-  public ParseRuntimeException(String message, Bookmark bookmark, String digest) {
-    super(message);
+  public ParseRuntimeException(Throwable cause, String message, Bookmark bookmark, String digest, Object partialObject) {
+    super(message, cause);
     this.bookmark = bookmark;
     this.digest = digest;
+    this.partialObject = partialObject;
   }
 
   public String getMessage() {
