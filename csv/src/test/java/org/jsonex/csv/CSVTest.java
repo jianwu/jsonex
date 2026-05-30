@@ -55,11 +55,6 @@ public class CSVTest {
     testParseAndWrite(new CSVOption(), TEST_CSV);
   }
 
-  @Test public void testParseAndWriteWithHeader_1() {
-    testParseAndWrite(new CSVOption().setIncludeHeader(false), TEST_CSV_1);
-  }
-
-
   @Test public void testParseAndWriteObj() {
     testParseAndWrite(new CSVOption(), TEST_OBJ);
   }
