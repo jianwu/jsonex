@@ -7,7 +7,6 @@ import org.jsonex.core.charsource.ReaderCharSource;
 import org.jsonex.core.charsource.ParseRuntimeException;
 import static org.jsonex.core.util.FileUtil.loadResource;
 import static org.jsonex.core.util.FileUtil.readResource;
-import static org.jsonex.core.util.ListUtil.flatMap;
 import static org.jsonex.core.util.ListUtil.listOf;
 import static org.jsonex.core.util.MapBuilder.mapOf;
 import org.jsonex.treedoc.TDNode;

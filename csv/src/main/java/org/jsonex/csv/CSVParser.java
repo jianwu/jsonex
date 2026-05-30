@@ -49,11 +49,16 @@ public class CSVParser {
     TDNode row = new TDNode(root.getDoc(), null).setType(fields == null ? TDNode.Type.ARRAY: TDNode.Type.MAP);
     row.setStart(src.getBookmark());
     int i = 0;
-    while (!src.isEof() && src.peek() != opt.recordSep) {
+    boolean endOfRecord = false;
+    while (!endOfRecord) {
       if (!src.skipChars(SPACE_CHARS))
         break;
       Bookmark start = src.getBookmark();
       Object val = readField(src, opt, row);
+      endOfRecord = src.isEof() || src.peek() == opt.recordSep;
+      if (!endOfRecord)
+        src.skip();
+
       String key = null;
       if (fields != null) {
         if (i >= fields.size())
@@ -71,7 +76,7 @@ public class CSVParser {
     if (row.hasChildren())
       root.addChild(row);
     if (!src.isEof())
-      src.read();  // Skip the recordSep
+      src.skip();  // Skip the recordSep
   }
 
   public List<Object> readNonEmptyRecord(CharSource src, CSVOption opt) {
@@ -85,13 +90,17 @@ public class CSVParser {
 
   public List<Object> readRecord(CharSource src, CSVOption opt) {
     List<Object> result = new ArrayList<>();
-    while (!src.isEof() && src.peek() != opt.recordSep) {
+    boolean endOfRecord = false;
+    while (!endOfRecord) {
       if (!src.skipChars(SPACE_CHARS))
         break;
       result.add(readField(src, opt, null));
+      endOfRecord = src.isEof() || src.peek() == opt.recordSep;
+      if (!endOfRecord)
+        src.skip();
     }
     if (!src.isEof())
-      src.read();  // Skip the recordSep
+      src.skip();  // Skip the recordSep
     return result;
   }
 
@@ -128,9 +137,6 @@ public class CSVParser {
       }
       src.skipChars(" \t");
     }
-
-    if (!src.isEof() && src.peek() == opt.fieldSep)
-      src.skip();  // Skip fieldSep
 
     String str = sb.toString();
     return isString ? str : ClassUtil.toSimpleObject(str);
